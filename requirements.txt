@@ -1,3 +1,6 @@
 gradio
 fastapi
 uvicorn
+numpy
+requests
+pymilvus
