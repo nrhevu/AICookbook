@@ -4,9 +4,9 @@ import requests
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
-from opentelemetry import trace
 
 from cookingassistant.data.item import Ingredient, Recipe
+from observation.telemetry.tracespan_decorator import TraceSpan
 
 
 
@@ -18,7 +18,7 @@ class LLMClient(ABC):
         """Generate text using the LLM"""
         pass
 
-
+@TraceSpan("OpenAIClient.generate_text")
 class OpenAIClient(LLMClient):
     """Implementation for OpenAI's API"""
 
@@ -27,24 +27,21 @@ class OpenAIClient(LLMClient):
         self.model = model
 
     def generate_text(self, prompt: str) -> str:
-        tracer = trace.get_tracer(__name__)
-        with tracer.start_as_current_span("OpenAIClient.generate_text"):
-            """Generate text using OpenAI's API"""
-            url = "https://api.deepseek.com/chat/completions"
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {self.api_key}"
-            }
-
-            prompt = {
-                "model": self.model,
-                "messages": [
-                    {"role": "user", "content": prompt}
-                ],
-                "stream": False  # Disable streaming
-            }
-            response = requests.post(url, headers=headers, json=prompt)
-            return response.text
+        """Generate text using OpenAI's API"""
+        url = "https://api.deepseek.com/chat/completions"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.api_key}"
+        }
+        prompt = {
+            "model": self.model,
+            "messages": [
+                {"role": "user", "content": prompt}
+            ],
+            "stream": False  # Disable streaming
+        }
+        response = requests.post(url, headers=headers, json=prompt)
+        return response.text
 
 
 class InstructionGenerator:
