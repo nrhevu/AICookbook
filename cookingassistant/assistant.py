@@ -3,7 +3,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
-from cookingassistant.data import Ingredient, RecipeSuggestor
+from cookingassistant.data.item import Ingredient, Recipe
+from cookingassistant.data.suggestor import RecipeSuggestor
 from cookingassistant.model.detector import ImageRecognitionModel
 from cookingassistant.model.llm import InstructionGenerator
 

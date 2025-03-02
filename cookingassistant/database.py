@@ -1,19 +1,15 @@
+import json
 import os
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
-from pymilvus import (
-    connections,
-    utility,
-    FieldSchema,
-    CollectionSchema,
-    DataType,
-    Collection,
-    MilvusClient
-)
-import json
+
+from pymilvus import (Collection, CollectionSchema, DataType, FieldSchema,
+                      MilvusClient, connections, utility)
 from sentence_transformers import SentenceTransformer
+
+from cookingassistant.data.item import Ingredient, Recipe
 
 
 class CommonIngredientsRegistry:
@@ -22,9 +18,9 @@ class CommonIngredientsRegistry:
     def __init__(self):
         self.common_ingredients = self._initialize_common_ingredients()
 
-    def _initialize_common_ingredients(self) -> List["Ingredient"]:
+    def _initialize_common_ingredients(self) -> List[Ingredient]:
         """Initialize the list of common ingredients"""
-        from cookingassistant.data import Ingredient
+        from cookingassistant.data.item import Ingredient
 
         return [
             Ingredient("salt", True),
@@ -38,9 +34,12 @@ class CommonIngredientsRegistry:
 
     def is_common(self, ingredient_name: str) -> bool:
         """Check if an ingredient is in the common ingredients list"""
-        return any(ing.name.lower() == ingredient_name.lower() for ing in self.common_ingredients)
+        return any(
+            ing.name.lower() == ingredient_name.lower()
+            for ing in self.common_ingredients
+        )
 
-    def get_all_common_ingredients(self) -> List["Ingredient"]:
+    def get_all_common_ingredients(self) -> List[Ingredient]:
         """Get all common ingredients"""
         return self.common_ingredients
 
@@ -54,13 +53,17 @@ class RecipeDatabase(ABC):
         pass
 
     @abstractmethod
-    def find_recipes_by_ingredients(self, ingredients: List["Ingredient"], category: Optional[str] = None, top_n: int = 3) -> List[
-        "Recipe"]:
+    def find_recipes_by_ingredients(
+        self,
+        ingredients: List[Ingredient],
+        category: Optional[str] = None,
+        top_n: int = 3,
+    ) -> List["Recipe"]:
         """Find recipes that match the given ingredients, optionally filtered by category"""
         pass
 
     @abstractmethod
-    def get_recipe_by_id(self, recipe_id: str) -> Optional["Recipe"]:
+    def get_recipe_by_id(self, recipe_id: str) -> Optional[Recipe]:
         """Get a specific recipe by ID"""
         pass
 
@@ -71,6 +74,7 @@ class SQLRecipeDatabase(RecipeDatabase):
 
 class VectorRecipeDatabase(RecipeDatabase):
     """Vector database implementation using Milvus for recipe storage and retrieval"""
+
     # Milvus collection names
     RECIPE_COLLECTION = "recipes"
 
@@ -87,18 +91,13 @@ class VectorRecipeDatabase(RecipeDatabase):
     def connect(self, connection_string: str) -> None:
         """Connect to the Milvus database"""
         try:
-            host, port = connection_string.split(':')
+            host, port = connection_string.split(":")
 
             # Connect to Milvus server
-            connections.connect(
-                host=host,
-                port=port
-            )
+            connections.connect(host=host, port=port)
 
             # Create Milvus client
-            self.client = MilvusClient(
-                uri=f"http://{connection_string}"
-            )
+            self.client = MilvusClient(uri=f"http://{connection_string}")
 
             # Initialize embedding model
             self.embedding_model = SentenceTransformer(self.embedding_model_name)
@@ -118,32 +117,42 @@ class VectorRecipeDatabase(RecipeDatabase):
         # Recipe collection
         if not utility.has_collection(self.RECIPE_COLLECTION):
             recipe_fields = [
-                FieldSchema(name="id", dtype=DataType.VARCHAR, is_primary=True, max_length=100),
+                FieldSchema(
+                    name="id", dtype=DataType.VARCHAR, is_primary=True, max_length=100
+                ),
                 FieldSchema(name="name", dtype=DataType.VARCHAR, max_length=255),
-                FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=self.VECTOR_DIM),
+                FieldSchema(
+                    name="vector", dtype=DataType.FLOAT_VECTOR, dim=self.VECTOR_DIM
+                ),
                 FieldSchema(name="data", dtype=DataType.VARCHAR, max_length=10000),
             ]
             recipe_schema = CollectionSchema(fields=recipe_fields)
-            recipe_collection = Collection(name=self.RECIPE_COLLECTION, schema=recipe_schema)
+            recipe_collection = Collection(
+                name=self.RECIPE_COLLECTION, schema=recipe_schema
+            )
 
             # Create index for vector search
             index_params = {
                 "metric_type": "COSINE",
                 "index_type": "HNSW",
-                "params": {"M": 8, "efConstruction": 64}
+                "params": {"M": 8, "efConstruction": 64},
             }
-            recipe_collection.create_index(field_name="vector", index_params=index_params)
+            recipe_collection.create_index(
+                field_name="vector", index_params=index_params
+            )
 
     def _generate_embedding(self, text: str) -> List[float]:
         """Generate a vector embedding for text"""
         if not self.embedding_model:
-            raise ValueError("Embedding model not initialized. Connect to database first.")
+            raise ValueError(
+                "Embedding model not initialized. Connect to database first."
+            )
 
         # Generate embedding
         embedding = self.embedding_model.encode(text)
         return embedding.tolist()
 
-    def add_recipe(self, recipe: "Recipe") -> None:
+    def add_recipe(self, recipe: Recipe) -> None:
         """
         Add a recipe to the vector database
         """
@@ -160,8 +169,11 @@ class VectorRecipeDatabase(RecipeDatabase):
         recipe_data = {
             "id": recipe.id,
             "name": recipe.name,
-            "ingredients": [{"name": ing.name, "is_common": ing.is_common} for ing in recipe.ingredients],
-            "instructions": recipe.instructions
+            "ingredients": [
+                {"name": ing.name, "is_common": ing.is_common}
+                for ing in recipe.ingredients
+            ],
+            "instructions": recipe.instructions,
         }
 
         self.client.insert(
@@ -170,15 +182,15 @@ class VectorRecipeDatabase(RecipeDatabase):
                 "id": recipe.id,
                 "name": recipe.name,
                 "vector": recipe_vector,
-                "data": json.dumps(recipe_data)
-            }
+                "data": json.dumps(recipe_data),
+            },
         )
 
-    def get_recipe_by_id(self, recipe_id: str) -> Optional["Recipe"]:
+    def get_recipe_by_id(self, recipe_id: str) -> Optional[Recipe]:
         """
         Get a specific recipe by ID
         """
-        from cookingassistant.data import Ingredient, Recipe
+        from cookingassistant.data.item import Ingredient, Recipe
 
         if not self.connected:
             raise ConnectionError("Not connected to Milvus database")
@@ -191,7 +203,7 @@ class VectorRecipeDatabase(RecipeDatabase):
         results = self.client.query(
             collection_name=self.RECIPE_COLLECTION,
             filter=f'id == "{recipe_id}"',
-            output_fields=["id", "name", "data"]
+            output_fields=["id", "name", "data"],
         )
 
         if not results:
@@ -208,13 +220,17 @@ class VectorRecipeDatabase(RecipeDatabase):
             id=recipe_data["id"],
             name=recipe_data["name"],
             ingredients=ingredients_list,
-            instructions=recipe_data["instructions"]
+            instructions=recipe_data["instructions"],
         )
 
         return recipe
 
-    def find_recipes_by_ingredients(self, ingredients: List["Ingredient"], category: Optional[str] = None, top_n: int = 3) -> List[
-        "Recipe"]:
+    def find_recipes_by_ingredients(
+        self,
+        ingredients: List[Ingredient],
+        category: Optional[str] = None,
+        top_n: int = 3,
+    ) -> List[Recipe]:
         """
         Find recipes that match the given ingredients
         """
@@ -235,10 +251,7 @@ class VectorRecipeDatabase(RecipeDatabase):
         query_vector = self._generate_embedding(query_text)
 
         # Search for similar recipes
-        search_params = {
-            "metric_type": "COSINE",
-            "params": {"ef": 64}
-        }
+        search_params = {"metric_type": "COSINE", "params": {"ef": 64}}
 
         # Build filtering expression for category if provided
         expr = None
@@ -252,7 +265,7 @@ class VectorRecipeDatabase(RecipeDatabase):
             filter=expr,
             limit=3,
             output_fields=["id", "name", "data"],
-            search_params=search_params
+            search_params=search_params,
         )
 
         # Process results

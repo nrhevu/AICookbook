@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
-from cookingassistant.data import Ingredient, Recipe
+from cookingassistant.data.item import Ingredient, Recipe
 
 
 class LLMClient(ABC):

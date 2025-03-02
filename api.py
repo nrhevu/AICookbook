@@ -1,5 +1,5 @@
 # Load configuration
-from cookingassistant import AppConfig, AppFactory
+from cookingassistant.engine import AppConfig, AppFactory
 from fastapi import FastAPI
 
 app = FastAPI()
