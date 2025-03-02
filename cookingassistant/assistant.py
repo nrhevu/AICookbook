@@ -2,11 +2,14 @@ import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
+from opentelemetry import trace
 
 from cookingassistant.data.item import Ingredient, Recipe
 from cookingassistant.data.suggestor import RecipeSuggestor
 from cookingassistant.model.detector import ImageRecognitionModel
 from cookingassistant.model.llm import InstructionGenerator
+from observation.telemetry.tracespan_decorator import TraceSpan
+
 
 from PIL.Image import Image
 
@@ -21,6 +24,7 @@ class CookingAssistant:
         self.recipe_processor = recipe_processor
         self.instruction_generator = instruction_generator
     
+    @TraceSpan("CookingAssistant.process_request")
     def process_request(self, images: List[str] | List[Image], user_query: str) -> Dict[str, Any]:
         """Process a user request with images and text query"""
         # read image to Pillow Image if path is provided
@@ -40,7 +44,7 @@ class CookingAssistant:
         
         if not ranked_recipes:
             return {"status": "no_recipes_found", "message": "No matching recipes found"}
-        
+            
         # 4. Generate cooking instructions for the top recipe
         top_recipe = ranked_recipes[0]
         instructions = self.instruction_generator.generate_instructions(

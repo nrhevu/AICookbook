@@ -1,0 +1,89 @@
+version: '3'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.4
+    hostname: elasticsearch
+    networks:
+      - elastic-jaeger
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    environment:
+      - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata1:/usr/share/elasticsearch/data
+      - eslog:/usr/share/elasticsearch/logs
+      - ./config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+
+  jaeger-collector:
+    image: jaegertracing/jaeger-collector
+    ports:
+      - "14267:14267"
+      - "14268:14268"
+      - "9411:9411"
+      - "14250:14250"
+    hostname: jaeger-collector
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - elastic-jaeger
+    command: ["--es.server-urls=http://elasticsearch:9200"]
+    environment:
+      SPAN_STORAGE_TYPE: "elasticsearch"
+    depends_on:
+      - elasticsearch
+  
+  jaeger-agent:
+    image: jaegertracing/jaeger-agent
+    ports:
+      - "5775:5775/udp"
+      - "5778:5778"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+    depends_on:
+      - jaeger-collector
+      - elasticsearch
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    hostname: jaeger-agent
+    networks:
+      - elastic-jaeger
+    command: ["--reporter.grpc.host-port=jaeger-collector:14267"]
+
+  jaeger-query:
+    image: jaegertracing/jaeger-query:1.8
+    ports:
+      - "16686:16686"
+    depends_on:
+      - jaeger-collector
+      - elasticsearch
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - elastic-jaeger
+    environment:
+      SPAN_STORAGE_TYPE: "elasticsearch"
+      QUERY_BASE_PATH: "/ui"
+      JAEGER_DISABLED: "true"  # disable internal tracing
+    command: ["--es.server-urls=http://elasticsearch:9200", "--es.sniffer=false", "--log-level=debug"]
+
+volumes:
+  esdata1:
+  eslog:
+
+networks:
+  elastic-jaeger:
