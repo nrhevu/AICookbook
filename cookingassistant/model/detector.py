@@ -3,6 +3,10 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 from PIL.Image import Image
+from opentelemetry import trace
+
+
+tracer = trace.get_tracer(__name__)
 
 class ImageRecognitionModel(ABC):
     """Abstract class for the AI model that recognizes ingredients"""
@@ -30,9 +34,17 @@ class PyTorchImageRecognitionModel(ImageRecognitionModel):
         pass
     
     def predict(self, images: List[Image]) -> List[str]:
-        """Predict ingredients using the PyTorch model"""
-        # Implementation would run inference on images
-        return []
+        tracer = trace.get_tracer(__name__)   
+        with tracer.start_as_current_span("PyTorchImageRecognitionModel.predict"):
+            """Predict ingredients using the PyTorch model"""
+            # Implementation would run inference on images
+            return []
+
+    #Predict with 
+    #def predict(self, images: List[Image]) -> List[str]:
+    #    """Predict ingredients using the PyTorch model"""
+    #    # Implementation would run inference on images
+    #    return []
 
 class OnnxImageRecognitionModel(ImageRecognitionModel):
     pass

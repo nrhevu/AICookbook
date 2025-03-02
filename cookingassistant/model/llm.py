@@ -4,8 +4,10 @@ import requests
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
+from opentelemetry import trace
 
 from cookingassistant.data.item import Ingredient, Recipe
+
 
 
 class LLMClient(ABC):
@@ -25,22 +27,24 @@ class OpenAIClient(LLMClient):
         self.model = model
 
     def generate_text(self, prompt: str) -> str:
-        """Generate text using OpenAI's API"""
-        url = "https://api.deepseek.com/chat/completions"
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.api_key}"
-        }
+        tracer = trace.get_tracer(__name__)
+        with tracer.start_as_current_span("OpenAIClient.generate_text"):
+            """Generate text using OpenAI's API"""
+            url = "https://api.deepseek.com/chat/completions"
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.api_key}"
+            }
 
-        prompt = {
-            "model": self.model,
-            "messages": [
-                {"role": "user", "content": prompt}
-            ],
-            "stream": False  # Disable streaming
-        }
-        response = requests.post(url, headers=headers, json=prompt)
-        return response.text
+            prompt = {
+                "model": self.model,
+                "messages": [
+                    {"role": "user", "content": prompt}
+                ],
+                "stream": False  # Disable streaming
+            }
+            response = requests.post(url, headers=headers, json=prompt)
+            return response.text
 
 
 class InstructionGenerator:
