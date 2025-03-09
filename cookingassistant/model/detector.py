@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 from PIL.Image import Image
 
+from observation.telemetry.tracespan_decorator import TraceSpan
+
 class ImageRecognitionModel(ABC):
     """Abstract class for the AI model that recognizes ingredients"""
     
@@ -28,11 +30,19 @@ class PyTorchImageRecognitionModel(ImageRecognitionModel):
         """Load the PyTorch model"""
         # Implementation would load the model
         pass
-    
+        
+    @TraceSpan("PyTorchImageRecognitionModel.predict")
     def predict(self, images: List[Image]) -> List[str]:
+        
         """Predict ingredients using the PyTorch model"""
         # Implementation would run inference on images
         return []
+
+    #Predict with 
+    #def predict(self, images: List[Image]) -> List[str]:
+    #    """Predict ingredients using the PyTorch model"""
+    #    # Implementation would run inference on images
+    #    return []
 
 class OnnxImageRecognitionModel(ImageRecognitionModel):
     pass
