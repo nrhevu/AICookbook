@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
 from cookingassistant.data.item import Ingredient, Recipe
+from observation.telemetry.tracespan_decorator import TraceSpan
+
 
 
 class LLMClient(ABC):
@@ -16,7 +18,7 @@ class LLMClient(ABC):
         """Generate text using the LLM"""
         pass
 
-
+@TraceSpan("OpenAIClient.generate_text")
 class OpenAIClient(LLMClient):
     """Implementation for OpenAI's API"""
 
@@ -31,7 +33,6 @@ class OpenAIClient(LLMClient):
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.api_key}"
         }
-
         prompt = {
             "model": self.model,
             "messages": [
