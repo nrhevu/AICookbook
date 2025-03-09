@@ -10,6 +10,9 @@
 ``` docker compose -f jaeger-stack.yaml ```
 ``` Access UI at:  http://localhost:16686/ui/search```
 
+# Setup Milvus
+``` docker compose up -d ```
+
 # Data download
 - Fill [form](https://forms.gle/EzYSu8j3D1LJzVbR8)
 - Download file `recipes_with_nutritional_info.json`
