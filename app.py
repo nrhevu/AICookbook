@@ -8,11 +8,11 @@ from ultralytics import YOLO
 
 from cookingassistant.data.item import Ingredient, Recipe
 from cookingassistant.database import VectorRecipeDatabase
-
+from cookingassistant.model.detector import PyTorchImageRecognitionModel
 # Load model
 vectordb = VectorRecipeDatabase()
 vectordb.connect("localhost:19530")
-model = YOLO("./models/best.pt")
+model = PyTorchImageRecognitionModel("./models/best.pt")
 
 
 css = """
@@ -21,26 +21,9 @@ css = """
 
 
 def process(images, text_input):
-    ingredients = set()
-    for i in images:
-        i = Image.open(i)
-        results = model(i)
-
-        # Lấy danh sách các vật thể phát hiện được
-        detected_objects = []
-        for r in results:
-            for box in r.boxes:
-                detected_objects.append(
-                    {
-                        "class": model.names[int(box.cls)],  # Tên lớp
-                        "confidence": float(box.conf),  # Độ tin cậy
-                    }
-                )
-        for obj in detected_objects:
-            ingredients.add(obj["class"])
-
+    ingredients = model.predict(images)
     ingredients = [Ingredient(name=ing) for ing in ingredients]
-
+    print(ingredients)
     find_result = vectordb.find_recipes_by_ingredients(ingredients)
 
     final_result = ""
