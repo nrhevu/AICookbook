@@ -17,3 +17,7 @@
 - Fill [form](https://forms.gle/EzYSu8j3D1LJzVbR8)
 - Download file `recipes_with_nutritional_info.json`
 - Copy to `data` folder
+
+# Create DB
+`python create_db.py`
+

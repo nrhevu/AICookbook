@@ -4,6 +4,7 @@ uvicorn
 numpy
 requests
 pymilvus
+ultralytics
 opentelemetry-api
 opentelemetry-sdk
 opentelemetry-exporter-jaeger
