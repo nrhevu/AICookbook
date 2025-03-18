@@ -62,8 +62,12 @@ class InstructionGenerator:
         )
         return prompt
 
+    def generate_instructions_with_no_api(self, recipe: Recipe, available_ingredients: List[Ingredient], user_query: str) -> str:
+        return "No API Key provided. This is the instruction"
     def generate_instructions(self, recipe: Recipe, available_ingredients: List[Ingredient], user_query: str) -> str:
         """Generate detailed cooking instructions using LLM"""
+        if self.llm_client.api_key == '':
+            generate_instructions_with_no_api(recipe, available_ingredients, user_query)
         prompt = self.create_prompt(recipe, available_ingredients, user_query)
         return self.llm_client.generate_text(prompt)
 
