@@ -2,11 +2,13 @@ import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
+
 import PIL
 from PIL.Image import Image
 from ultralytics import YOLO
 
 from observation.telemetry.tracespan_decorator import TraceSpan
+
 
 class ImageRecognitionModel(ABC):
     """Abstract class for the AI model that recognizes ingredients"""
@@ -39,7 +41,7 @@ class PyTorchImageRecognitionModel(ImageRecognitionModel):
         # Implementation would run inference on images
         ingredients = set()
         for i in images:
-            i = PIL.Image.open(i)
+            # i = PIL.Image.open(i)
             results = self.model(i)
 
             # Lấy danh sách các vật thể phát hiện được

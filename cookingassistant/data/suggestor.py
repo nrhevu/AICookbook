@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from cookingassistant.data.item import Ingredient, Recipe
 from cookingassistant.database import CommonIngredientsRegistry, RecipeDatabase
 
+
 class RecipeSuggestor:
     """Class that processes user queries to find suitable recipes"""
     

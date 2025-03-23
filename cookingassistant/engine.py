@@ -1,6 +1,7 @@
 from cookingassistant.assistant import CookingAssistant
-from cookingassistant.data.suggestor  import RecipeSuggestor
-from cookingassistant.database import CommonIngredientsRegistry, SQLRecipeDatabase, VectorRecipeDatabase
+from cookingassistant.data.suggestor import RecipeSuggestor
+from cookingassistant.database import (CommonIngredientsRegistry,
+                                       SQLRecipeDatabase, VectorRecipeDatabase)
 from cookingassistant.model.detector import PyTorchImageRecognitionModel
 from cookingassistant.model.llm import InstructionGenerator, OpenAIClient
 

@@ -6,14 +6,15 @@ from fastapi import FastAPI, File, UploadFile
 from PIL import Image
 from ultralytics import YOLO
 
-from cookingassistant.data.item import Ingredient, Recipe
-from cookingassistant.database import VectorRecipeDatabase
-from cookingassistant.model.detector import PyTorchImageRecognitionModel
 from cookingassistant.assistant import CookingAssistant
+from cookingassistant.data.item import Ingredient, Recipe
 from cookingassistant.data.suggestor import RecipeSuggestor
-from cookingassistant.model.llm import InstructionGenerator
-from cookingassistant.database import CommonIngredientsRegistry
-from cookingassistant.model.llm import OpenAIClient
+from cookingassistant.database import (CommonIngredientsRegistry,
+                                       VectorRecipeDatabase)
+from cookingassistant.model.detector import PyTorchImageRecognitionModel
+from cookingassistant.model.llm import (InstructionGeneratorByTemplate,
+                                        OpenAIClient)
+
 # Load model
 OPENAI_API_KEY = '' # load from env
 vectordb = VectorRecipeDatabase()
@@ -23,8 +24,8 @@ model = PyTorchImageRecognitionModel("./models/best.pt")
 common_ingredients = CommonIngredientsRegistry()
 recipe_processor = RecipeSuggestor(vectordb, common_ingredients)
 
-llm_client = OpenAIClient(OPENAI_API_KEY)
-instruction_generator = InstructionGenerator(llm_client)
+# llm_client = OpenAIClient(OPENAI_API_KEY)
+instruction_generator = InstructionGeneratorByTemplate()
 cooking_assistant = CookingAssistant(model, recipe_processor, instruction_generator)
 
 css = """
@@ -34,7 +35,7 @@ css = """
 
 def process(images, text_input):
     response = cooking_assistant.process_request(images, text_input)
-    return str(response.get('recipe', "No recipe found"))
+    return str(response.get('detailed_instructions', "No recipe found"))
 
 
 def swap_to_gallery(images):

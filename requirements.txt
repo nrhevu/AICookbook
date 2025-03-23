@@ -2,6 +2,8 @@ gradio
 fastapi
 uvicorn
 numpy
+pandas
+tqdm
 requests
 pymilvus
 opentelemetry-api
