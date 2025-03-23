@@ -2,6 +2,8 @@ gradio
 fastapi
 uvicorn
 numpy
+pandas
+tqdm
 requests
 pymilvus
 ultralytics
@@ -10,3 +12,5 @@ opentelemetry-sdk
 opentelemetry-exporter-jaeger
 opentelemetry-instrumentation-fastapi
 opentelemetry-instrumentation-requests
+ultralytics
+sentence_transformers

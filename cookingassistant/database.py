@@ -104,7 +104,7 @@ class VectorRecipeDatabase(RecipeDatabase):
 
             # Create collections if they don't exist
             self._initialize_collections()
-
+            
             self.connected = True
             print(f"Successfully connected to Milvus at {connection_string}")
 
@@ -140,6 +140,10 @@ class VectorRecipeDatabase(RecipeDatabase):
             recipe_collection.create_index(
                 field_name="vector", index_params=index_params
             )
+            print("Index created successfully")
+        
+            # Load the collection
+            recipe_collection.load() 
 
     def _generate_embedding(self, text: str) -> List[float]:
         """Generate a vector embedding for text"""

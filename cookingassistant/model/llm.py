@@ -1,13 +1,13 @@
-import os
 import json
-import requests
+import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
+import requests
+
 from cookingassistant.data.item import Ingredient, Recipe
 from observation.telemetry.tracespan_decorator import TraceSpan
-
 
 
 class LLMClient(ABC):
@@ -43,8 +43,12 @@ class OpenAIClient(LLMClient):
         response = requests.post(url, headers=headers, json=prompt)
         return response.text
 
+class BaseInstructionGenerator():
+    @abstractmethod
+    def generate_instructions(self, recipe: Recipe, available_ingredients: List[Ingredient], user_query: str) -> str:
+        pass
 
-class InstructionGenerator:
+class InstructionGeneratorByLLM(BaseInstructionGenerator):
     """Class that generates cooking instructions using LLM"""
 
     def __init__(self, llm_client: LLMClient):
@@ -64,6 +68,20 @@ class InstructionGenerator:
 
     def generate_instructions(self, recipe: Recipe, available_ingredients: List[Ingredient], user_query: str) -> str:
         """Generate detailed cooking instructions using LLM"""
+        if self.llm_client.api_key == '':
+            raise Exception("No API Key provided")
         prompt = self.create_prompt(recipe, available_ingredients, user_query)
         return self.llm_client.generate_text(prompt)
 
+class InstructionGeneratorByTemplate(BaseInstructionGenerator):
+    def generate_instructions(self, recipe: Recipe, available_ingredients: List[Ingredient], user_query: str) -> str:
+        final_result = ""
+        for i, r in enumerate(recipe):
+            final_result += f"{i+1}.\n"
+            final_result += f"""Name: {r["name"]}\n"""
+            final_result += f"""Ingredients: {', '.join([ing["name"] for ing in r["ingredients"]])}\n"""
+            instruction = "\n    -".join(r["instructions"].split("\n"))
+            final_result += f"""Instructions:\n    -{instruction}\n\n"""
+
+        return str(final_result)
+    

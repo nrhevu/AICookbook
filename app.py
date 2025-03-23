@@ -6,14 +6,27 @@ from fastapi import FastAPI, File, UploadFile
 from PIL import Image
 from ultralytics import YOLO
 
+from cookingassistant.assistant import CookingAssistant
 from cookingassistant.data.item import Ingredient, Recipe
-from cookingassistant.database import VectorRecipeDatabase
+from cookingassistant.data.suggestor import RecipeSuggestor
+from cookingassistant.database import (CommonIngredientsRegistry,
+                                       VectorRecipeDatabase)
+from cookingassistant.model.detector import PyTorchImageRecognitionModel
+from cookingassistant.model.llm import (InstructionGeneratorByTemplate,
+                                        OpenAIClient)
 
 # Load model
+OPENAI_API_KEY = '' # load from env
 vectordb = VectorRecipeDatabase()
 vectordb.connect("localhost:19530")
-model = YOLO("./models/best.pt")
+model = PyTorchImageRecognitionModel("./models/best.pt")
 
+common_ingredients = CommonIngredientsRegistry()
+recipe_processor = RecipeSuggestor(vectordb, common_ingredients)
+
+# llm_client = OpenAIClient(OPENAI_API_KEY)
+instruction_generator = InstructionGeneratorByTemplate()
+cooking_assistant = CookingAssistant(model, recipe_processor, instruction_generator)
 
 css = """
 .gradio-container {width: 85% !important}
@@ -21,37 +34,8 @@ css = """
 
 
 def process(images, text_input):
-    ingredients = set()
-    for i in images:
-        i = Image.open(i)
-        results = model(i)
-
-        # Lấy danh sách các vật thể phát hiện được
-        detected_objects = []
-        for r in results:
-            for box in r.boxes:
-                detected_objects.append(
-                    {
-                        "class": model.names[int(box.cls)],  # Tên lớp
-                        "confidence": float(box.conf),  # Độ tin cậy
-                    }
-                )
-        for obj in detected_objects:
-            ingredients.add(obj["class"])
-
-    ingredients = [Ingredient(name=ing) for ing in ingredients]
-
-    find_result = vectordb.find_recipes_by_ingredients(ingredients)
-
-    final_result = ""
-    for i, recipe in enumerate(find_result):
-        final_result += f"{i+1}.\n"
-        final_result += f"""Name: {recipe["name"]}\n"""
-        final_result += f"""Ingredients: {', '.join([ing["name"] for ing in recipe["ingredients"]])}\n"""
-        instruction = "\n    -".join(recipe["instructions"].split("\n"))
-        final_result += f"""Instructions:\n    -{instruction}\n\n"""
-
-    return str(final_result)
+    response = cooking_assistant.process_request(images, text_input)
+    return str(response.get('detailed_instructions', "No recipe found"))
 
 
 def swap_to_gallery(images):
