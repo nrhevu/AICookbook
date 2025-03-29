@@ -74,19 +74,17 @@ class SQLRecipeDatabase(RecipeDatabase):
 
 class VectorRecipeDatabase(RecipeDatabase):
     """Vector database implementation using Milvus for recipe storage and retrieval"""
-
-    # Milvus collection names
-    RECIPE_COLLECTION = "recipes"
-
     # Vector dimensions - depends on the embedding model used
     VECTOR_DIM = 384
 
-    def __init__(self, embedding_model: str = "all-MiniLM-L6-v2"):
+    def __init__(self, embedding_model: str = "all-MiniLM-L6-v2", 
+                 RECIPE_COLLECTION = "recipes"):
         """Initialize the vector database with an embedding model"""
         self.embedding_model_name = embedding_model
         self.embedding_model = None
         self.client = None
         self.connected = False
+        self.RECIPE_COLLECTION = RECIPE_COLLECTION
 
     def connect(self, connection_string: str) -> None:
         """Connect to the Milvus database"""
@@ -124,7 +122,7 @@ class VectorRecipeDatabase(RecipeDatabase):
                 FieldSchema(
                     name="vector", dtype=DataType.FLOAT_VECTOR, dim=self.VECTOR_DIM
                 ),
-                FieldSchema(name="data", dtype=DataType.VARCHAR, max_length=10000),
+                FieldSchema(name="data", dtype=DataType.VARCHAR, max_length=12000),
             ]
             recipe_schema = CollectionSchema(fields=recipe_fields)
             recipe_collection = Collection(
