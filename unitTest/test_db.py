@@ -138,7 +138,9 @@ class TestMilvus(unittest.TestCase):
     def test_insert_recipe(self):
         ingredient_dict = {0: Ingredient("test1", is_common=False),1: Ingredient("test2", is_common=False)}
         recipe = Recipe(id="test_id", name="test_name", instructions="test", ingredients=[ingredient_dict[i] for i in ingredient_dict])
+        collection = Collection('recipes')
         self.vectorDB.add_recipe(recipe)
+        collection.flush()
         recipe_test = self.vectorDB.get_recipe_by_id("test_id")
         self.assertEqual(recipe_test.id, "test_id", "Failed to insert")
         self.vectorDB.client.delete(ids=['test_id'], collection_name="recipes")

@@ -172,3 +172,4 @@ cython_debug/
 volumes/
 data/
 tmp.py
+.vscode/
