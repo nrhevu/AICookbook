@@ -42,7 +42,7 @@ jobs:
       run: |
         docker-compose up -d
 
-    - name: Build and start containers with Docker Compose
+    - name: Build Vector database
       run: |
         python create_db.py
 
