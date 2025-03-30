@@ -14,4 +14,3 @@ opentelemetry-instrumentation-fastapi
 opentelemetry-instrumentation-requests
 ultralytics
 sentence_transformers
-unittest
