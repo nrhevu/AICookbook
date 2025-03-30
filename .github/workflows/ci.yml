@@ -40,7 +40,7 @@ jobs:
 
     - name: Build and start containers with Docker Compose
       run: |
-        docker-compose up -d
+        docker compose up -d
 
     - name: Build Vector database
       run: |
