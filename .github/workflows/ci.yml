@@ -1,0 +1,56 @@
+name: CI workflow
+
+on:
+  push:
+    branches:
+      - main
+      - duydd5_ci_cd
+      - features/full-production
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    
+jobs:
+  test:
+    strategy: 
+      matrix: 
+        python-version:
+          - "3.10"
+          # - "3.11"
+          # - "3.12"
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt  # Assumes you have a requirements.txt with necessary dependencies
+
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v2
+
+    - name: Build and start containers with Docker Compose
+      run: |
+        docker compose up -d
+
+    - name: Create data directory
+      run: |
+        mkdir data && cd data && wget http://wednesday.csail.mit.edu/temporal/release/recipes_with_nutritional_info.json
+
+    - name: Build Vector database
+      run: |
+        python create_db.py
+
+    - name: Run unit tests
+      run: |
+        python -m unittest discover -s unitTest

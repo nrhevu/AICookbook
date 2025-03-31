@@ -1,7 +1,7 @@
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Set
 
 import PIL
 from PIL.Image import Image
@@ -35,7 +35,7 @@ class PyTorchImageRecognitionModel(ImageRecognitionModel):
         return YOLO(model_path)
         
     @TraceSpan("PyTorchImageRecognitionModel.predict")
-    def predict(self, images: List[Image]) -> List[str]:
+    def predict(self, images: List[Image]) -> Set[str]:
         
         """Predict ingredients using the PyTorch model"""
         # Implementation would run inference on images

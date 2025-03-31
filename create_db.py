@@ -3,6 +3,7 @@ from tqdm import tqdm
 
 from cookingassistant.data.item import Ingredient, Recipe
 from cookingassistant.database import VectorRecipeDatabase
+from pymilvus import MilvusException
 
 # Connect to the database
 vectordb = VectorRecipeDatabase()
@@ -25,5 +26,8 @@ for i in ingredients_name:
 
 # Add all recipes to the database
 for i, d in tqdm(df.iterrows(), total=len(df)):
-    recipe = Recipe(id=d["id"], name=d["title"], instructions=d["instructions"], ingredients=[ingredients[i] for i in d["ingredients"]])
-    vectordb.add_recipe(recipe)
+    try:
+        recipe = Recipe(id=d["id"], name=d["title"], instructions=d["instructions"], ingredients=[ingredients[i] for i in d["ingredients"]])
+        vectordb.add_recipe(recipe)
+    except MilvusException as e:
+        print("Error", e)
