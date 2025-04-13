@@ -1,4 +1,4 @@
-version: '3.5'
+version: '3.6'
 
 services:
   etcd:
@@ -61,7 +61,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile_app
 
-    image: AICookbookApp    
+    image: ai-cookbook    
     container_name: ai-cookbook-app
     depends_on:
       - standalone
