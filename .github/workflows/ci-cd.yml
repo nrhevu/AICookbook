@@ -1,4 +1,4 @@
-name: CI workflow
+name: CI CD workflow
 
 on:
   push:
@@ -6,19 +6,21 @@ on:
       - main
       - duydd5_ci_cd
       - features/full-production
+      - dev_duydd5_cd_gcp
   pull_request:
     branches:
       - main
   workflow_dispatch:
     
 jobs:
-  test:
+  ci:
+    name : Run CI
     strategy: 
       matrix: 
         python-version:
           - "3.10"
-          # - "3.11"
-          # - "3.12"
+          - "3.11"
+          - "3.12"
 
     runs-on: ubuntu-latest
     
@@ -54,3 +56,25 @@ jobs:
     - name: Run unit tests
       run: |
         python -m unittest discover -s unitTest
+  
+  cd: 
+    name: Deploy to GCP
+    needs: ci
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    
+    - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+    
+    - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: tidal-beacon-449208-f0
+    
+
+  

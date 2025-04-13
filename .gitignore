@@ -173,3 +173,5 @@ volumes/
 data/
 tmp.py
 .vscode/
+.dockerignore
+
