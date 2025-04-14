@@ -61,17 +61,12 @@ services:
       context: .
       dockerfile: docker/Dockerfile_app
 
-    image: ai-cookbook    
+    image: ai_cookbook_app 
     container_name: ai-cookbook-app
     depends_on:
       - standalone
     ports:
       - "7860:7860"
-      - "7861:7861"
-      - "7862:7862"
-      - "7863:7863"
-      - "7864:7864"
-      - "7865:7865"
 
 networks:
   default:

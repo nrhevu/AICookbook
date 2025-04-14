@@ -6,6 +6,9 @@ RUN apt-get update && \
     apt-get install -y python3 python3-pip python3-dev build-essential && \
     apt-get clean
 
+RUN apt-get install ffmpeg libsm6 libxext6  -y
+
+
 WORKDIR /app
 
 COPY requirements.txt .
@@ -13,6 +16,6 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-EXPOSE 7860 7861 7862 7863 7864 7865
+EXPOSE 7860
 
 CMD ["python3", "app.py"]
