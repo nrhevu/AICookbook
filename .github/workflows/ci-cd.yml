@@ -54,7 +54,7 @@ jobs:
 
     - name: Build Vector database
       run: |
-        python create_db.py
+        docker run --rm --network host ai_cookbook_app python3 create_db.py
 
     - name: Run unit tests
       run: |
