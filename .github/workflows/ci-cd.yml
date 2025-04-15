@@ -41,16 +41,17 @@ jobs:
     - name: Set up Docker
       uses: docker/setup-buildx-action@v2
 
+
+    - name: Create data directory
+      run: |
+        mkdir data && cd data && wget http://wednesday.csail.mit.edu/temporal/release/recipes_with_nutritional_info.json
+ 
     - name: Clean up Docker space
       run: docker system prune -af
 
     - name: Build and start containers with Docker Compose
       run: |
         docker compose up -d
-
-    - name: Create data directory
-      run: |
-        mkdir data && cd data && wget http://wednesday.csail.mit.edu/temporal/release/recipes_with_nutritional_info.json
 
     - name: Build Vector database
       run: |
