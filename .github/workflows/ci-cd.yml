@@ -95,4 +95,4 @@ jobs:
           docker pull ${{ secrets.DOCKER_USER }}/ai_cookbook_app
           docker tag ${{ secrets.DOCKER_USER }}/ai_cookbook_app:latest ai_cookbook_app
           cd /home/${{ secrets.GCE_SSH_USERNAME }}/app
-          docker compose up -d
+          docker compose up --detach --build --force-recreate
