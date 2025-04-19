@@ -1,58 +1,58 @@
 name: CI CD workflow
 
-on:
-  push:
-    branches:
-      - main
-      - duydd5_ci_cd
-      - features/full-production
-      - dev_duydd5_cd_gcp
-  pull_request:
-    branches:
-      - main
-  workflow_dispatch:
+# on:
+#   push:
+#     branches:
+#       - main
+#       - duydd5_ci_cd
+#       - features/full-production
+#       - dev_duydd5_cd_gcp
+#   pull_request:
+#     branches:
+#       - main
+#   workflow_dispatch:
     
-jobs:
-  ci:
-    name : Run CI
-    strategy: 
-      matrix: 
-        python-version:
-          - "3.10"
-          # - "3.11"
-          # - "3.12"
+# jobs:
+#   ci:
+#     name : Run CI
+#     strategy: 
+#       matrix: 
+#         python-version:
+#           - "3.10"
+#           # - "3.11"
+#           # - "3.12"
 
-    runs-on: ubuntu-latest
+#     runs-on: ubuntu-latest
     
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+#     steps:
+#     - name: Checkout code
+#       uses: actions/checkout@v2
 
-    - name: Set up Docker
-      uses: docker/setup-buildx-action@v2
+#     - name: Set up Docker
+#       uses: docker/setup-buildx-action@v2
 
-    - name: Create data directory
-      run: |
-        mkdir data && cd data && wget http://wednesday.csail.mit.edu/temporal/release/recipes_with_nutritional_info.json
+#     - name: Create data directory
+#       run: |
+#         mkdir data && cd data && wget http://wednesday.csail.mit.edu/temporal/release/recipes_with_nutritional_info.json
  
-    - name: Clean up Docker space
-      run: docker system prune -af
+#     - name: Clean up Docker space
+#       run: docker system prune -af
 
-    - name: Build and start containers with Docker Compose
-      run: |
-        docker compose up -d
+#     - name: Build and start containers with Docker Compose
+#       run: |
+#         docker compose up -d
 
-    - name: Build Vector database
-      run: |
-        docker run --rm -v "$(pwd)":/app --network host ai_cookbook_app python3 create_db.py
+#     - name: Build Vector database
+#       run: |
+#         docker run --rm -v "$(pwd)":/app --network host ai_cookbook_app python3 create_db.py
 
-    - name: Run unit tests
-      run: |
-        docker run --rm -v "$(pwd)":/app --network host ai_cookbook_app python -m unittest discover -s unitTest
+#     - name: Run unit tests
+#       run: |
+#         docker run --rm -v "$(pwd)":/app --network host ai_cookbook_app python -m unittest discover -s unitTest
   
   cd: 
     name: Deploy to GCP
-    needs: ci
+    # needs: ci
     runs-on: ubuntu-latest
 
     steps:
@@ -63,11 +63,28 @@ jobs:
       uses: google-github-actions/auth@v2
       with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
+          export_default_credentials: true
     
-    - name: Set up gcloud CLI
+    - name: Set up gcloud SDK
       uses: google-github-actions/setup-gcloud@v2
       with:
-          project_id: tidal-beacon-449208-f0
+          project_id: '${{ secrets.PROJECT_ID }}'
     
+    - name: Configure Docker to use gcloud as a credential helper
+      run: |
+        gcloud auth configure-docker
 
-  
+    - name: Build and push Docker images
+      run: |
+        docker compose build
+        docker compose push
+
+    - name: SSH into GCE and deploy
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: aicookbook-20250419-084621
+        username: ${{ secrets.GCE_SSH_USERNAME }} 
+        key: ${{ secrets.GCE_SSH_PRIVATE_KEY }}
+        script: |
+          docker compose pull
+          docker compose up -d
