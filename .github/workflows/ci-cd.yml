@@ -12,7 +12,7 @@ on:
       - main
   workflow_dispatch:
     
-# jobs:
+jobs:
 #   ci:
 #     name : Run CI
 #     strategy: 
