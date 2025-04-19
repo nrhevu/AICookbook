@@ -82,7 +82,6 @@ jobs:
         docker tag ai_cookbook_app ${{ secrets.DOCKER_USER }}/ai_cookbook_app
         docker push ${{ secrets.DOCKER_USER }}/ai_cookbook_app
 
-
     - name: SSH into GCE and deploy
       uses: appleboy/ssh-action@v1.0.3
       with:
