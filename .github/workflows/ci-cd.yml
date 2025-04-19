@@ -46,7 +46,7 @@ jobs:
   
   cd: 
     name: Deploy to GCP
-    # needs: ci
+    needs: ci
     runs-on: ubuntu-latest
 
     steps:
