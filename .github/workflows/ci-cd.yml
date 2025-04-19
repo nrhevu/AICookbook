@@ -79,7 +79,8 @@ jobs:
     - name: Build and push Docker images
       run: |
         docker compose build
-        docker compose push
+        docker tag ai_cookbook_app ${{ secrets.DOCKER_USER }}/ai_cookbook_app
+        docker push ${{ secrets.DOCKER_USER }}/ai_cookbook_app
 
     - name: SSH into GCE and deploy
       uses: appleboy/ssh-action@v1.0.3
@@ -88,5 +89,6 @@ jobs:
         username: ${{ secrets.GCE_SSH_USERNAME }} 
         key: ${{ secrets.GCE_SSH_PRIVATE_KEY }}
         script: |
-          docker compose pull
+          docker pull ${{ secrets.DOCKER_USER }}/ai_cookbook_app
+          docker tag ${{ secrets.DOCKER_USER }}/ai_cookbook_app:latest ai_cookbook_app
           docker compose up -d
