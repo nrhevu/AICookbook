@@ -82,11 +82,10 @@ jobs:
         docker tag ai_cookbook_app ${{ secrets.DOCKER_USER }}/ai_cookbook_app
         docker push ${{ secrets.DOCKER_USER }}/ai_cookbook_app
 
-
     - name: SSH into GCE and deploy
       uses: appleboy/ssh-action@v1.0.3
       with:
-        host: aicookbook-20250419-084621
+        host: 34.124.135.34
         username: ${{ secrets.GCE_SSH_USERNAME }} 
         key: ${{ secrets.GCE_SSH_PRIVATE_KEY }}
         script: |
