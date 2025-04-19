@@ -13,42 +13,36 @@ on:
   workflow_dispatch:
     
 jobs:
-#   ci:
-#     name : Run CI
-#     strategy: 
-#       matrix: 
-#         python-version:
-#           - "3.10"
-#           # - "3.11"
-#           # - "3.12"
+  ci:
+    name : Run CI
 
-#     runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
     
-#     steps:
-#     - name: Checkout code
-#       uses: actions/checkout@v2
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-#     - name: Set up Docker
-#       uses: docker/setup-buildx-action@v2
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v2
 
-#     - name: Create data directory
-#       run: |
-#         mkdir data && cd data && wget http://wednesday.csail.mit.edu/temporal/release/recipes_with_nutritional_info.json
+    - name: Create data directory
+      run: |
+        mkdir data && cd data && wget http://wednesday.csail.mit.edu/temporal/release/recipes_with_nutritional_info.json
  
-#     - name: Clean up Docker space
-#       run: docker system prune -af
+    - name: Clean up Docker space
+      run: docker system prune -af
 
-#     - name: Build and start containers with Docker Compose
-#       run: |
-#         docker compose up -d
+    - name: Build and start containers with Docker Compose
+      run: |
+        docker compose up -d
 
-#     - name: Build Vector database
-#       run: |
-#         docker run --rm -v "$(pwd)":/app --network host ai_cookbook_app python3 create_db.py
+    - name: Build Vector database
+      run: |
+        docker run --rm -v "$(pwd)":/app --network host ai_cookbook_app python3 create_db.py
 
-#     - name: Run unit tests
-#       run: |
-#         docker run --rm -v "$(pwd)":/app --network host ai_cookbook_app python -m unittest discover -s unitTest
+    - name: Run unit tests
+      run: |
+        docker run --rm -v "$(pwd)":/app --network host ai_cookbook_app python -m unittest discover -s unitTest
   
   cd: 
     name: Deploy to GCP

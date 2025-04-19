@@ -97,4 +97,4 @@ with gr.Blocks(title="Multi-Image and Text Processor", css=css) as demo:
                 """
     )
 
-demo.launch()
+demo.launch(server_name="0.0.0.0", server_port=7860)
