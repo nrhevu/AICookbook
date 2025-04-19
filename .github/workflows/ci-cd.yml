@@ -82,6 +82,15 @@ jobs:
         docker tag ai_cookbook_app ${{ secrets.DOCKER_USER }}/ai_cookbook_app
         docker push ${{ secrets.DOCKER_USER }}/ai_cookbook_app
 
+    - name: Upload source code to GCE
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: 34.124.135.34
+        username: ${{ secrets.GCE_SSH_USERNAME }}
+        key: ${{ secrets.GCE_SSH_PRIVATE_KEY }}
+        source: "."
+        target: "/home/${{ secrets.GCE_SSH_USERNAME }}/app"
+
     - name: SSH into GCE and deploy
       uses: appleboy/ssh-action@v1.0.3
       with:
@@ -91,5 +100,5 @@ jobs:
         script: |
           docker pull ${{ secrets.DOCKER_USER }}/ai_cookbook_app
           docker tag ${{ secrets.DOCKER_USER }}/ai_cookbook_app:latest ai_cookbook_app
+          cd /home/${{ secrets.GCE_SSH_USERNAME }}/app
           docker compose up -d
-          
