@@ -92,3 +92,4 @@ jobs:
           docker pull ${{ secrets.DOCKER_USER }}/ai_cookbook_app
           docker tag ${{ secrets.DOCKER_USER }}/ai_cookbook_app:latest ai_cookbook_app
           docker compose up -d
+          
