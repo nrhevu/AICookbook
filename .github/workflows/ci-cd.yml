@@ -1,16 +1,16 @@
 name: CI CD workflow
 
-# on:
-#   push:
-#     branches:
-#       - main
-#       - duydd5_ci_cd
-#       - features/full-production
-#       - dev_duydd5_cd_gcp
-#   pull_request:
-#     branches:
-#       - main
-#   workflow_dispatch:
+on:
+  push:
+    branches:
+      - main
+      - duydd5_ci_cd
+      - features/full-production
+      - dev_duydd5_cd_gcp
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
     
 # jobs:
 #   ci:
