@@ -28,19 +28,8 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    # - name: Set up Python
-    #   uses: actions/setup-python@v2
-    #   with:
-    #     python-version: ${{ matrix.python-version }}
-
-    # - name: Install dependencies
-    #   run: |
-    #     python -m pip install --upgrade pip
-    #     pip install -r requirements.txt  # Assumes you have a requirements.txt with necessary dependencies
-
     - name: Set up Docker
       uses: docker/setup-buildx-action@v2
-
 
     - name: Create data directory
       run: |
@@ -55,11 +44,11 @@ jobs:
 
     - name: Build Vector database
       run: |
-        docker run --rm --network host ai_cookbook_app python3 create_db.py
+        docker run --rm -v "$(pwd)":/app --network host ai_cookbook_app python3 create_db.py
 
     - name: Run unit tests
       run: |
-        python -m unittest discover -s unitTest
+        docker run --rm -v "$(pwd)":/app --network host ai_cookbook_app python -m unittest discover -s unitTest
   
   cd: 
     name: Deploy to GCP
