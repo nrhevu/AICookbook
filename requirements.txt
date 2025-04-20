@@ -12,5 +12,5 @@ opentelemetry-sdk
 opentelemetry-exporter-jaeger
 opentelemetry-instrumentation-fastapi
 opentelemetry-instrumentation-requests
-ultralytics
 sentence_transformers
+opencv-python

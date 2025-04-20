@@ -1,4 +1,4 @@
-version: '3.5'
+version: '3.6'
 
 services:
   etcd:
@@ -55,6 +55,18 @@ services:
     depends_on:
       - "etcd"
       - "minio"
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile_app
+    network_mode: host
+    image: ai_cookbook_app 
+    container_name: ai-cookbook-app
+    volumes:
+      - ./:/app
+    depends_on:
+      - standalone
 
 networks:
   default:
